@@ -1,0 +1,30 @@
+/* home page */
+.map-container {
+    overflow: hidden;
+    padding-bottom: 0;
+    position: relative;
+    height: 0;
+}
+
+.map-container iframe {
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+/* home login register page */
+.pass,
+.signup_link,
+.link,
+.login_link {
+    text-decoration: none;
+}
+
+.pass:hover,
+.signup_link:hover,
+.link:hover,
+.login_link:hover {
+    text-decoration: underline;
+}
