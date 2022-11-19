@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 
-    <title>Login Form</title>
+    <title>PASSWORD RECOVERY FORM</title>
 </head>
 <body>
 
@@ -66,8 +66,10 @@
 </html>
 
 <?php
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\SMTP;
 
-    if(isset($_POST["reset"])){
+        if(isset($_POST["reset"])){
 
         include_once('connection.php');
         $email = $_POST["email"];
@@ -77,73 +79,57 @@
   	    $fetch = mysqli_fetch_assoc($sql);
 
         if(mysqli_num_rows($sql) <= 0){
-            ?>
-            <script>
-                alert("<?php  echo "No email exsist "?>");
-            </script>
-            <?php
-        }else if($fetch["email"] == 0){
-            ?>
-               <script>
-                   alert("verify your account first!");
-                   window.location.replace("resetform.php");
-               </script>
-           <?php
+            echo "<script>alert('No Email Exist!');</script>";
         }else{
-
-
-            // generate token by binaryhexa
-            $token = bin2hex(random_bytes(50));
-
-            //session_start ();
-            // $token = $_SESSION['token'];
-            // $_SESSION['email'] = $email;
-
-            // $_SESSION['token'] = $token;
+           // generate token by binaryhexa
+            $token = bin2hex(random_bytes(1));
+            // $otp = uniqid();
+            $link = "http://localhost/Php/Web-Based-Ordering-latest/Web-Based-Ordering-Management-System-master/resetpassword.php";
             $_SESSION['email'] = $email;
+            $_SESSION['token'] = $token;
 
-            require "Mail/phpmailer/PHPMailerAutoload.php";
-            $mail = new PHPMailer;
+            require 'vendor/autoload.php';
+            $mail = new PHPMailer(true);
+
+            try {
+              //Server settings
+              $mail->SMTPDebug  = SMTP::DEBUG_OFF;
+              //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+              $mail->isSMTP();                                            //Send using SMTP
+              $mail->Host       = 'smtp.gmail.com';                       //Set the SMTP server to send through
+              $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+              $mail->Username   = 'webBasedOrdering098@gmail.com'; //from //SMTP username
+              $mail->Password   = 'cgzyificorxxdlau';                     //SMTP password
+              $mail->SMTPSecure =  PHPMailer::ENCRYPTION_SMTPS;           //Enable implicit TLS encryption
+              $mail->Port       =  465;                                   //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+              //Recipients
+              $mail->setFrom('webBasedOrdering098@gmail.com', 'webBasedOrdering');
+              $mail->addAddress("$email");                                //sent to
+
+              //Content
+              $mail->Subject = 'Reset Link';
+              $mail->Body    = $link;
+
+              $mail->send();
+
+              }catch (Exception $e) {
+                //return if there is an error in sending an otp
+                echo $mail->ErrorInfo;
+                echo "<script>window.location.replace('register.php');</script>";
+                return;
+              }
+              include('method/Query.php');
+              $query =  "insert into passwordreset(email,token) values('$email','$token')";;
+              if(!Query($query))
+              echo "<script>alert('sent!'); window.location.replace('resetform.php');</script>";
+              else
+                echo "<script>window.location.replace('resetform.php'); alert('Reset Link Sent!');</script>";
 
 
-            $mail->isSMTP();
-            $mail->Host='smtp.gmail.com';
-            $mail->Port=465;
-            $mail->SMTPAuth=true;
-            $mail->SMTPSecure='tls';
 
-            // h-hotel account
-            $mail->Username='email account';
-            $mail->Password='email password';
-
-            // send by h-hotel email
-            $mail->setFrom('username', 'Password Reset');
-            $mail->addAddress($_POST["email"]);
-
-
-            // HTML body
-            $mail->isHTML(true);
-            $mail->Subject="Recover your password";
-            $mail->Body="<b>link</b>
-            http://localhost/Php/Web-Based-Ordering-latest/Web-Based-Ordering-Management-System-master/resetpassword.php
-            <br><br>
-            <b>Web Based Ordering Management System/b>";
-
-            if(!$mail->send()){
-                ?>
-                    <script>
-                        alert("<?php echo " Invalid Email "?>");
-                    </script>
-                <?php
-            }else{
-                ?>
-                    <script>
-                        window.location.replace("login.php");
-                    </script>
-                <?php
-            }
         }
-    }
+  }
 
 
 ?>
